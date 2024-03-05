@@ -42,7 +42,7 @@ const myUsbDevices = async() => {
 - [ ] Support linux USB devices
 - [ ] Support windows USB devices
 
-### License [![MIT license][license-img]][license-url]
+### License
 Further details see [LICENSE](LICENSE) file.
 
 
