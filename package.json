@@ -1,0 +1,52 @@
+{
+    "name": "@spci/libs",
+    "version": "0.0.1",
+    "description": "System information library",
+    "author": "Tagir Khadzhiev <aspedm@gmail.com>",
+    "license": "MIT",
+    "private": false,
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.es.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "start": "node --experimental-modules playground/index.js",
+        "clean": "rm -rf dist",
+        "build": "yarn clean && node_modules/.bin/rollup --config"
+    },
+    "devDependencies": {
+        "@babel/core": "7.24.0",
+        "@babel/plugin-transform-private-methods": "7.23.3",
+        "@babel/preset-typescript": "7.23.3",
+        "@rollup/plugin-babel": "6.0.4",
+        "@rollup/plugin-commonjs": "25.0.7",
+        "@rollup/plugin-json": "6.1.0",
+        "@rollup/plugin-node-resolve": "15.2.3",
+        "@rollup/plugin-typescript": "11.1.6",
+        "@types/lodash": "4.14.202",
+        "@types/node": "20.10.8",
+        "@types/shelljs": "0.8.15",
+        "@typescript-eslint/eslint-plugin": "6.18.1",
+        "@typescript-eslint/parser": "6.18.1",
+        "eslint": "8.56.0",
+        "eslint-config-airbnb": "19.0.4",
+        "eslint-config-prettier": "9.1.0",
+        "eslint-import-resolver-alias": "1.1.2",
+        "eslint-import-resolver-typescript": "3.6.1",
+        "eslint-plugin-import": "2.29.1",
+        "eslint-plugin-jsx-a11y": "6.8.0",
+        "eslint-plugin-prettier": "5.1.3",
+        "eslint-plugin-react": "7.33.2",
+        "eslint-plugin-react-hooks": "4.6.0",
+        "prettier": "3.2.5",
+        "rollup": "4.12.0",
+        "rollup-plugin-commonjs": "10.1.0",
+        "rollup-plugin-dts": "6.1.0",
+        "rollup-plugin-terser": "7.0.2",
+        "typescript": "5.3.3"
+    },
+    "dependencies": {
+        "lodash": "4.17.21",
+        "shelljs": "0.8.5"
+    }
+}

@@ -1,0 +1,24 @@
+# dependencies
+/node_modules
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.vscode
+.DS_Store
+.env
+.npmrc
+
+# testing
+/coverage
+
+# build
+/dist
