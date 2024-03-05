@@ -1,4 +1,4 @@
-# @spci/libs
+# spci-libs
 
 ### About
 This project containts libs to get information about system.
