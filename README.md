@@ -23,7 +23,7 @@ This project containts libs to get information about system.
 
 ### Install
 ```sh
-yarn install @spci/libs
+yarn install spci-libs
 ```
 
 ### Usage

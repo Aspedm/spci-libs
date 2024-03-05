@@ -1,5 +1,5 @@
 {
-    "name": "@spci/libs",
+    "name": "spci-libs",
     "version": "0.0.1",
     "description": "System information library",
     "author": "Tagir Khadzhiev <aspedm@gmail.com>",
@@ -12,7 +12,8 @@
     "scripts": {
         "start": "node --experimental-modules playground/index.js",
         "clean": "rm -rf dist",
-        "build": "yarn clean && node_modules/.bin/rollup --config"
+        "build": "yarn clean && node_modules/.bin/rollup --config",
+        "prepublishOnly": "yarn build"
     },
     "devDependencies": {
         "@babel/core": "7.24.0",
