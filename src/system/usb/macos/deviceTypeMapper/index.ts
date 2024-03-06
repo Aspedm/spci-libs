@@ -5,7 +5,7 @@ class DeviceTypeMapper {
         camera: USB_DEVICE_TYPE.CAMERA,
         'touch bar': USB_DEVICE_TYPE.TOUCH_BAR,
         controller: USB_DEVICE_TYPE.CONTROLLER,
-        headset: USB_DEVICE_TYPE.AUDIO,
+        headset: USB_DEVICE_TYPE.HEADSET,
         iphone: USB_DEVICE_TYPE.PHONE,
         ipad: USB_DEVICE_TYPE.TABLET,
         nintendo: USB_DEVICE_TYPE.CONSOLE,
