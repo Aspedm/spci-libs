@@ -10,6 +10,7 @@ class DeviceTypeMapper {
         ipad: USB_DEVICE_TYPE.TABLET,
         nintendo: USB_DEVICE_TYPE.CONSOLE,
         magsafe: USB_DEVICE_TYPE.MAGSAFE,
+        earpods: USB_DEVICE_TYPE.HEADSET,
         keyboard: USB_DEVICE_TYPE.KEYBOARD,
         trackpad: USB_DEVICE_TYPE.TRACKPAD,
         sensor: USB_DEVICE_TYPE.SENSOR,

@@ -24,6 +24,7 @@ export enum USB_DEVICE_TYPE {
     TABLET = 'Tablet',
     CONSOLE = 'Gaming console',
     MAGSAFE = 'MagSafe',
+    HEADSET = 'Headset',
     KEYBOARD = 'Keyboard',
     TRACKPAD = 'Trackpad',
     SENSOR = 'Sensor',
