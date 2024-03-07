@@ -33,4 +33,5 @@ export enum USB_DEVICE_TYPE {
     MOUSE = 'Mouse',
     MICROPHONE = 'Microphone',
     STORAGE = 'Storage',
+    USB_COMPOSITE_DEVICE = 'USB Composite Device',
 }

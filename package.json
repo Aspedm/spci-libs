@@ -1,6 +1,6 @@
 {
     "name": "spci-libs",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "System information library",
     "author": "Tagir Khadzhiev <aspedm@gmail.com>",
     "license": "MIT",
@@ -11,8 +11,8 @@
     "types": "./dist/index.d.ts",
     "scripts": {
         "start": "node --experimental-modules playground/index.js",
-        "clean": "rm -rf dist",
-        "build": "yarn clean && node_modules/.bin/rollup --config",
+        "clean": "rimraf dist",
+        "build": "yarn clean && rollup --config",
         "prepublishOnly": "yarn build"
     },
     "devDependencies": {
@@ -23,6 +23,7 @@
         "@rollup/plugin-commonjs": "25.0.7",
         "@rollup/plugin-json": "6.1.0",
         "@rollup/plugin-node-resolve": "15.2.3",
+        "@rollup/plugin-terser": "0.4.4",
         "@rollup/plugin-typescript": "11.1.6",
         "@types/lodash": "4.14.202",
         "@types/node": "20.10.8",
@@ -40,10 +41,10 @@
         "eslint-plugin-react": "7.33.2",
         "eslint-plugin-react-hooks": "4.6.0",
         "prettier": "3.2.5",
+        "rimraf": "5.0.5",
         "rollup": "4.12.0",
         "rollup-plugin-commonjs": "10.1.0",
         "rollup-plugin-dts": "6.1.0",
-        "rollup-plugin-terser": "7.0.2",
         "typescript": "5.3.3"
     },
     "dependencies": {

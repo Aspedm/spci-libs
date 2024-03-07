@@ -10,16 +10,16 @@ This project containts libs to get information about system.
 #### USB
 | Name          | Type            | Linux | Mac OS | Windows (10+) | Description                                       |
 |---------------|-----------------|-------|--------|---------------|---------------------------------------------------|
-|`bus`          | string \| null  | ✅    | ❌      | ❌            | Identifies the USB bus the device is connected to |
-|`deviceId`     | string \| null  | ✅    | ❌      | ❌            | Unique identifier assigned to the USB device      |
-|`id`           | string \| null  | ✅    | ✅      | ✅            | Unique identifier for the USB device              |
-|`name`         | string \| null  | ✅    | ✅      | ✅            | Human-readable name of the USB device             |
-|`type`         | string \| null  | ✅    | ✅      | ✅            | Categorizes the USB device based on functionality |
-|`removable`    | boolean \| null | ✅    | ✅      | ❌            | Indicates if the device is removable              |
-|`vendor`       | string \| null  | ✅    | ✅      | ❌            | Identifies the vendor                             |
-|`manufacturer` | string \| null  | ✅    | ✅      | ✅            | Specifies the device's manufacturer.              |
-|`maxPower`     | string \| null  | ✅    | ❌      | ❌            | Maximum power the device can draw (in mA)         |
-|`serialNumber` | string \| null  | ✅    | ✅      | ❌            | Unique serial number assigned by the manufacturer |
+|`bus`          | string \| null  | ✅    | ❌    | ❌            | Identifies the USB bus the device is connected to |
+|`deviceId`     | string \| null  | ✅    | ❌    | ✅            | Unique identifier assigned to the USB device      |
+|`id`           | string \| null  | ✅    | ✅    | ✅            | Unique identifier for the USB device              |
+|`name`         | string \| null  | ✅    | ✅    | ✅            | Human-readable name of the USB device             |
+|`type`         | string \| null  | ✅    | ✅    | ✅            | Categorizes the USB device based on functionality |
+|`removable`    | boolean \| null | ✅    | ✅    | ❌            | Indicates if the device is removable              |
+|`vendor`       | string \| null  | ✅    | ✅    | ❌            | Identifies the vendor                             |
+|`manufacturer` | string \| null  | ✅    | ✅    | ✅            | Specifies the device's manufacturer.              |
+|`maxPower`     | string \| null  | ✅    | ❌    | ❌            | Maximum power the device can draw (in mA)         |
+|`serialNumber` | string \| null  | ✅    | ✅    | ❌            | Unique serial number assigned by the manufacturer |
 
 ### Install
 ```sh
@@ -44,8 +44,14 @@ const myUsbDevices = async() => {
 3. Run playground ```yarn start```
 
 ### TODO
-- [ ] Support linux USB devices
-- [ ] Support windows USB devices
+#### USB
+- [ ] Support Linux USB devices
+- [X] Support Windows USB devices
+
+#### Audio
+- [ ] Support linux audio devices
+- [ ] Support Mac OS audio devices
+- [ ] Support Windows audio devices
 
 ### License
 Further details see [LICENSE](LICENSE) file.

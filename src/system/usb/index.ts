@@ -2,6 +2,7 @@ import { plafromDetector } from '../../helpers/platformDetector';
 
 import { ISpciUsb, ISpciUsbDevice } from './interface';
 import Macos from './macos';
+import Windows from './windows';
 
 class Usb {
     private PLATFORM: ISpciUsb | null = null;
@@ -10,7 +11,7 @@ class Usb {
         this.PLATFORM = plafromDetector<ISpciUsb | null>({
             linux: null,
             macos: new Macos(),
-            windows: null,
+            windows: new Windows(),
         });
     }
 
