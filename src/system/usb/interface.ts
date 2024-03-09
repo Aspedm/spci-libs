@@ -11,6 +11,13 @@ export interface ISpciUsbDevice {
     serialNumber: string | null;
 }
 
+/**
+ * Interface representing a USB device.
+ */
 export interface ISpciUsb {
+    /**
+     * Get information about USB devices.
+     * @returns {Promise<ISpciUsbDevice[]>} A promise that resolves to an array of USB devices.
+     */
     getInfo: () => Promise<ISpciUsbDevice[]>;
 }

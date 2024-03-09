@@ -8,18 +8,7 @@ This project containts libs to get information about system.
 ### Supported modules
 
 #### USB
-| Name          | Type            | Linux | Mac OS | Windows (10+) | Description                                       |
-|---------------|-----------------|-------|--------|---------------|---------------------------------------------------|
-|`bus`          | string \| null  | ✅    | ❌    | ❌            | Identifies the USB bus the device is connected to |
-|`deviceId`     | string \| null  | ✅    | ❌    | ✅            | Unique identifier assigned to the USB device      |
-|`id`           | string \| null  | ✅    | ✅    | ✅            | Unique identifier for the USB device              |
-|`name`         | string \| null  | ✅    | ✅    | ✅            | Human-readable name of the USB device             |
-|`type`         | string \| null  | ✅    | ✅    | ✅            | Categorizes the USB device based on functionality |
-|`removable`    | boolean \| null | ✅    | ✅    | ❌            | Indicates if the device is removable              |
-|`vendor`       | string \| null  | ✅    | ✅    | ❌            | Identifies the vendor                             |
-|`manufacturer` | string \| null  | ✅    | ✅    | ✅            | Specifies the device's manufacturer.              |
-|`maxPower`     | string \| null  | ✅    | ❌    | ❌            | Maximum power the device can draw (in mA)         |
-|`serialNumber` | string \| null  | ✅    | ✅    | ❌            | Unique serial number assigned by the manufacturer |
+- The documentation for USB devices can be found [here](https://github.com/Aspedm/spci-libs/blob/main/src/system/usb/README.md)
 
 ### Install
 ```sh
