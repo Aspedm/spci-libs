@@ -4,7 +4,7 @@ import shelljs from 'shelljs';
 import { DEFAULT_FIELDS_VALUES } from '../config';
 import { ISpciUsb, ISpciUsbDevice } from '../interface';
 
-import DeviceTypeMapper from './deviceTypeMapper';
+import DeviceType from './DeviceType';
 
 class Windows implements ISpciUsb {
     private USB_FIELDS: ISpciUsbDevice = { ...DEFAULT_FIELDS_VALUES };
@@ -25,7 +25,7 @@ class Windows implements ISpciUsb {
             const result: Record<string, string>[] = JSON.parse(output);
             return result;
         } catch (error) {
-            console.error('Error while parse Windows output', error);
+            console.error('Error while parse Windows usb output', error);
             return null;
         }
     }
@@ -47,7 +47,7 @@ class Windows implements ISpciUsb {
      * @param {number} id - Fake id
      * @returns {ISpciUsbDevice | null}
      */
-    private fillUsbFields(usbObj: Record<string, string>, id: number): ISpciUsbDevice {
+    private fillUsbFields(usbObj: Record<string, string>, id: number): ISpciUsbDevice | null {
         try {
             const name = get(usbObj, 'FriendlyName', null);
             const invalidDevice = this.invalidDevice(name);
@@ -64,13 +64,13 @@ class Windows implements ISpciUsb {
                 id: id.toString(),
                 name,
                 deviceId,
-                type: DeviceTypeMapper.getFriendlyNameType(type, get(usbObj, 'Service', '')),
+                type: DeviceType.determinateType(type, get(usbObj, 'Service', '')),
                 manufacturer,
             };
 
             return usbFields;
         } catch (error) {
-            console.error('Error while fill usb fields');
+            console.error('Error while fill usb fields', error);
             return null;
         }
     }

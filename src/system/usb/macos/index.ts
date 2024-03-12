@@ -6,7 +6,7 @@ import shelljs from 'shelljs';
 import { DEFAULT_FIELDS_VALUES, MAX_BUFFER } from '../config';
 import { ISpciUsb, ISpciUsbDevice } from '../interface';
 
-import DeviceTypeMapper from './deviceTypeMapper';
+import DeviceType from './DeviceType';
 
 class Macos implements ISpciUsb {
     private USB_FIELDS: ISpciUsbDevice = { ...DEFAULT_FIELDS_VALUES };
@@ -100,7 +100,7 @@ class Macos implements ISpciUsb {
             const type =
                 (usbObj.kUSBProductString || usbObj['USB Product Name'] || '').toLowerCase() +
                 (isRemovable ? ' removable' : '');
-            const humanFriendlyType = DeviceTypeMapper.getFriendlyNameType(type);
+            const humanFriendlyType = DeviceType.determinateType(type);
 
             const usbFields: ISpciUsbDevice = {
                 ...this.USB_FIELDS,

@@ -1,6 +1,6 @@
 {
     "name": "spci-libs",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "System information library",
     "author": "Tagir Khadzhiev <aspedm@gmail.com>",
     "license": "MIT",

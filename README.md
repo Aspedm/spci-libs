@@ -10,6 +10,9 @@ This project containts libs to get information about system.
 #### USB
 - The documentation for USB devices can be found [here](https://github.com/Aspedm/spci-libs/blob/main/src/system/usb/README.md)
 
+#### RAM
+- The documentation for RAM can be found [here](https://github.com/Aspedm/spci-libs/blob/main/src/system/ram/README.md)
+
 ### Install
 ```sh
 yarn install spci-libs
@@ -34,13 +37,21 @@ const myUsbDevices = async() => {
 
 ### TODO
 #### USB
-- [ ] Support Linux USB devices
-- [X] Support Windows USB devices
+- [ ] Support Linux
+- [X] Support Windows
+
+#### RAM
+- [ ] Support linux
+- [ ] Support Mac OS
+- [X] Support Windows
 
 #### Audio
-- [ ] Support linux audio devices
-- [ ] Support Mac OS audio devices
-- [ ] Support Windows audio devices
+- [ ] Support linux
+- [ ] Support Mac OS
+- [ ] Support Windows
+
+#### Playground
+- [ ] Improve playground
 
 ### License
 Further details see [LICENSE](LICENSE) file.

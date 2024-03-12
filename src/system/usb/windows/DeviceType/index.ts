@@ -1,6 +1,6 @@
 import { USB_DEVICE_TYPE } from '../../config';
 
-class DeviceTypeMapper {
+class DeviceType {
     private static WINDOWS_DEVICE_TYPES_MAP: Record<string, USB_DEVICE_TYPE> = {
         iphone: USB_DEVICE_TYPE.PHONE,
         ipad: USB_DEVICE_TYPE.TABLET,
@@ -22,7 +22,7 @@ class DeviceTypeMapper {
      * @param {string} service
      * @returns {string}
      */
-    public static getFriendlyNameType(type: string, service: string): string {
+    public static determinateType(type: string, service: string): string {
         if (typeof type !== 'string') return type;
 
         const foundDevice = Object.keys(this.WINDOWS_DEVICE_TYPES_MAP).find(keyword => type.includes(keyword));
@@ -31,4 +31,4 @@ class DeviceTypeMapper {
     }
 }
 
-export default DeviceTypeMapper;
+export default DeviceType;

@@ -29,7 +29,7 @@ class DeviceTypeMapper {
      * @param {string} type
      * @returns {string}
      */
-    public static getFriendlyNameType(type: string): string {
+    public static determinateType(type: string): string {
         if (typeof type !== 'string') return type;
 
         const foundDevice = Object.keys(this.MAC_OS_DEVICE_TYPES_MAP).find(keyword => type.includes(keyword));
