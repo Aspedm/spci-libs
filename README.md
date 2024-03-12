@@ -6,9 +6,9 @@
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 
 ### About
-This project containts libs to get information about system.
+The project consists of a set of libraries for obtaining system information. Each library includes a collection of methods designed to gather various parameters and characteristics of the system.
 
-> This project does not aim to cover all modules of the system. If you need more information about the system, i recommend using [systeminformation](https://github.com/sebhildebrandt/systeminformation).
+> This project doesn't include all parts of the system. If you want more info about the system, i suggest using [systeminformation](https://github.com/sebhildebrandt/systeminformation).
 
 ### Supported modules
 
