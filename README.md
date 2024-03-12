@@ -38,6 +38,7 @@ const myUsbDevices = async() => {
 ### TODO
 #### USB
 - [ ] Support Linux
+- [X] Support Mac OS
 - [X] Support Windows
 
 #### RAM
