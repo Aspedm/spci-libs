@@ -1,8 +1,13 @@
 {
     "name": "spci-libs",
-    "version": "0.0.5",
-    "description": "System information library",
+    "version": "0.0.6",
+    "description": "The project consists of a set of libraries for obtaining system information.",
     "author": "Tagir Khadzhiev <aspedm@gmail.com>",
+    "homepage": "https://github.com/Aspedm/spci-libs",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Aspedm/spci-libs.git"
+    },
     "license": "MIT",
     "private": false,
     "type": "module",
@@ -19,6 +24,8 @@
         "@babel/core": "7.24.0",
         "@babel/plugin-transform-private-methods": "7.23.3",
         "@babel/preset-typescript": "7.23.3",
+        "@inquirer/prompts": "4.3.0",
+        "@inquirer/select": "2.2.0",
         "@rollup/plugin-babel": "6.0.4",
         "@rollup/plugin-commonjs": "25.0.7",
         "@rollup/plugin-json": "6.1.0",
@@ -30,6 +37,7 @@
         "@types/shelljs": "0.8.15",
         "@typescript-eslint/eslint-plugin": "6.18.1",
         "@typescript-eslint/parser": "6.18.1",
+        "chalk": "5.3.0",
         "eslint": "8.56.0",
         "eslint-config-airbnb": "19.0.4",
         "eslint-config-prettier": "9.1.0",
@@ -50,5 +58,8 @@
     "dependencies": {
         "lodash": "4.17.21",
         "shelljs": "0.8.5"
+    },
+    "resolutions": {
+        "jackspeak": "2.1.1"
     }
 }

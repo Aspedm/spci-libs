@@ -15,8 +15,14 @@ class Ram implements ISpciRam {
     }
 
     /**
-     * Get base ram information
-     * @returns {Promise<ISpciRamFields | null>}
+     * Get base RAM information.
+     * This method returns an object containing RAM fields or null if information is unavailable.
+     * The fields in the RAM object depend on the underlying operating system.
+     * @example
+     * const ram = new Ram();
+     * const info = await ram.getInfo();
+     * console.log(info);
+     * @returns {Promise<ISpciRamFields | null>} A promise that resolves to RAM information object or null.
      */
     public async getInfo(): Promise<ISpciRamFields | null> {
         if (this.PLATFORM === null) return null;
@@ -26,8 +32,14 @@ class Ram implements ISpciRam {
     }
 
     /**
-     * Get ram layout info
-     * @returns {Promise<ISpciRamLayoutFields[]>}
+     * Get RAM layout information.
+     * This method returns an array of RAM layout fields.
+     * The fields in each RAM layout field object depend on the underlying operating system.
+     * @example
+     * const ram = new Ram();
+     * const layout = await ram.getLayout();
+     * console.log(layout);
+     * @returns {Promise<ISpciRamLayoutFields[]>} A promise that resolves to an array of RAM layout fields.
      */
     public async getLayout(): Promise<ISpciRamLayoutFields[]> {
         if (this.PLATFORM === null) return [];

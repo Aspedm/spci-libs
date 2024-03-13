@@ -23,7 +23,7 @@ The project consists of a set of libraries for obtaining system information. Eac
 yarn install spci-libs
 ```
 
-### Usage
+### Usage in code
 ```ts
 import { Usb } from 'spci-libs';
 
@@ -35,7 +35,7 @@ const myUsbDevices = async() => {
 };
 ```
 
-### Development
+### Usage in terminal
 1. Install dependencies ```yarn```
 2. Build lib ```yarn build```
 3. Run playground ```yarn start```
@@ -57,7 +57,7 @@ const myUsbDevices = async() => {
 - [ ] Support Windows
 
 #### Playground
-- [ ] Improve playground
+- [X] Improve playground
 
 ### License
 Further details see [LICENSE](LICENSE) file.
