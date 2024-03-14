@@ -14,6 +14,8 @@ class DeviceTypeMapper {
         keyboard: USB_DEVICE_TYPE.KEYBOARD,
         trackpad: USB_DEVICE_TYPE.TRACKPAD,
         sensor: USB_DEVICE_TYPE.SENSOR,
+        disk: USB_DEVICE_TYPE.STORAGE,
+        printer: USB_DEVICE_TYPE.PRINTER,
         bthusb: USB_DEVICE_TYPE.BLUETOOTH,
         bth: USB_DEVICE_TYPE.BLUETOOTH,
         rfcomm: USB_DEVICE_TYPE.BLUETOOTH,
@@ -21,20 +23,25 @@ class DeviceTypeMapper {
         hub: USB_DEVICE_TYPE.HUB,
         mouse: USB_DEVICE_TYPE.MOUSE,
         mic: USB_DEVICE_TYPE.MICROPHONE,
-        removable: USB_DEVICE_TYPE.STORAGE,
     };
 
     /**
      * Map Mac OS style usb device type to universal format
-     * @param {string} type
+     * @param {string} name - _name of SPUSBDataType class
+     * @param {Record<string, unknown> | null} media - Media of SPUSBDataType class
      * @returns {string}
      */
-    public static determinateType(type: string): string {
-        if (typeof type !== 'string') return type;
+    public static determinateType(name: string, media: Record<string, unknown> | null): string {
+        if (media !== null) return USB_DEVICE_TYPE.STORAGE;
+        if (typeof name !== 'string') return USB_DEVICE_TYPE.USB;
 
-        const foundDevice = Object.keys(this.MAC_OS_DEVICE_TYPES_MAP).find(keyword => type.includes(keyword));
+        const query = name.toLocaleLowerCase();
+        const typeKeys = Object.keys(this.MAC_OS_DEVICE_TYPES_MAP);
 
-        return foundDevice ? this.MAC_OS_DEVICE_TYPES_MAP[foundDevice] : type;
+        const result = typeKeys.find(keyword => query.includes(keyword));
+        if (typeof result === 'undefined') return USB_DEVICE_TYPE.USB;
+
+        return this.MAC_OS_DEVICE_TYPES_MAP[result];
     }
 }
 

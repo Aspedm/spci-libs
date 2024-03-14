@@ -1,68 +1,35 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import get from 'lodash/get';
-import trim from 'lodash/trim';
 import shelljs from 'shelljs';
 
 import { DEFAULT_FIELDS_VALUES, MAX_BUFFER } from '../config';
 import { ISpciUsb, ISpciUsbDevice } from '../interface';
 
+import DeviceBus from './DeviceBus';
 import DeviceType from './DeviceType';
+import DeviceVendor from './DeviceVendor';
 
 class Macos implements ISpciUsb {
     private USB_FIELDS: ISpciUsbDevice = { ...DEFAULT_FIELDS_VALUES };
 
-    private USB_BLOCK_LIST: string[] = [
-        'apple t2 controller',
-        'root hub simulation',
-        'usb host controller',
-        'facetime',
-    ];
+    private CMD: string = 'system_profiler SPUSBDataType -json';
 
-    private CMD: string = 'ioreg -p IOUSB -c AppleUSBRootHubDevice -w0 -l';
+    /**
+     * @returns {string}
+     */
+    private getUnicID(): string {
+        return Math.random().toString(36).substr(2, 10);
+    }
 
     /**
      * @param {string} output
-     * @returns {Record<string, any> | null}
+     * @returns {Record<string, unknown> | null}
      */
-    private parseOutput(output: string): Record<string, any> | null {
+    private parseOutput(output: string): Record<string, unknown> | null {
         if (typeof output !== 'string' || output.length === 0) return null;
 
         try {
-            let device = output.replace(/ \|/g, '');
-            device = device.trim();
-
-            let lines = device.split('\n');
-            lines.shift();
-
-            lines = lines.map(originalLine => {
-                let line = originalLine.trim().replace(/=/g, ':');
-
-                if (line !== '{' && line !== '}' && lines[lines.indexOf(originalLine) + 1]?.trim() !== '}') {
-                    line += ',';
-                }
-
-                line = line.replace(':Yes,', ':"Yes",');
-                line = line.replace(': Yes,', ': "Yes",');
-                line = line.replace(': Yes', ': "Yes"');
-                line = line.replace(':No,', ':"No",');
-                line = line.replace(': No,', ': "No",');
-                line = line.replace(': No', ': "No"');
-
-                // In this case (("com.apple.developer.driverkit.transport.usb"))
-                line = line.replace('((', '').replace('))', '');
-
-                // In case we have <923c11> we need make it "<923c11>" for correct JSON parse
-                const match = /<(\w+)>/.exec(line);
-                if (match) {
-                    const number = match[0];
-                    line = line.replace(number, `"${number}"`);
-                }
-
-                return line;
-            });
-
-            const usbObj = JSON.parse(lines.join('\n'));
-            return usbObj;
+            const result: Record<string, unknown> = JSON.parse(output);
+            return result;
         } catch (error) {
             console.error('Error while parse Mac OS output', error);
             return null;
@@ -70,50 +37,36 @@ class Macos implements ISpciUsb {
     }
 
     /**
-     * @param {string | null} name
-     * @returns {boolean}
+     * @param { Record<string, unknown>} usbArray
+     * @returns {ISpciUsbDevice[] | null}
      */
-    private invalidDevice(name: string | null): boolean {
-        if (typeof name !== 'string') return true;
-        const value = name.toLowerCase();
-
-        const result = this.USB_BLOCK_LIST.some(item => item.includes(value));
-        return result;
-    }
-
-    /**
-     * @param { Record<string, any>} usbObj
-     * @returns {ISpciUsbDevice | null}
-     */
-    private fillUsbFields(usbObj: Record<string, any>): ISpciUsbDevice {
+    private fillUsbFields(usbArray: Record<string, unknown>[]): ISpciUsbDevice[] | null {
         try {
-            const name = get(usbObj, 'kUSBProductString', null) || get(usbObj, 'USB Product Name', null);
-            const invalidDevice = this.invalidDevice(name);
-            if (invalidDevice) {
-                return null;
-            }
+            if (!Array.isArray(usbArray) || usbArray.length === 0) return null;
+            const result: ISpciUsbDevice[] = [];
 
-            const isRemovable =
-                (usbObj['Built-In'] ? usbObj['Built-In'].toLowerCase() !== 'yes' : true) &&
-                (usbObj['non-removable'] ? usbObj['non-removable'].toLowerCase() === 'no' : true);
+            usbArray.forEach(usbObj => {
+                const hasMedia = get(usbObj, 'Media', null);
+                const removable = hasMedia ? get(usbObj, 'Media[0].removable_media', null) === 'yes' : null;
 
-            const type =
-                (usbObj.kUSBProductString || usbObj['USB Product Name'] || '').toLowerCase() +
-                (isRemovable ? ' removable' : '');
-            const humanFriendlyType = DeviceType.determinateType(type);
+                const usbFields: ISpciUsbDevice = {
+                    ...this.USB_FIELDS,
+                    id: this.getUnicID(),
+                    bus: DeviceBus.determinateBus(get(usbObj, 'location_id', null)),
+                    name: get(usbObj, '_name', null),
+                    deviceId: get(usbObj, 'product_id', null),
+                    removable,
+                    type: DeviceType.determinateType(get(usbObj, '_name', null), get(usbObj, 'Media', null)),
+                    vendor: DeviceVendor.determinateVendor(get(usbObj, 'vendor_id', null)),
+                    manufacturer: get(usbObj, 'manufacturer', null),
+                    maxPower: get(usbObj, 'bus_power', null),
+                    serialNumber: get(usbObj, 'serial_num', null),
+                };
 
-            const usbFields: ISpciUsbDevice = {
-                ...this.USB_FIELDS,
-                id: get(usbObj, 'USB Address', null),
-                name: trim(name),
-                type: humanFriendlyType,
-                removable: isRemovable,
-                vendor: trim(get(usbObj, 'kUSBVendorString', null) || get(usbObj, 'USB Vendor Name', null)),
-                manufacturer: trim(get(usbObj, 'kUSBVendorString', null) || get(usbObj, 'USB Vendor Name')),
-                serialNumber: trim(get(usbObj, 'kUSBSerialNumberString', null)),
-            };
+                result.push(usbFields);
+            });
 
-            return usbFields;
+            return result;
         } catch (error) {
             console.error('Error while fill usb fields');
             return null;
@@ -125,33 +78,46 @@ class Macos implements ISpciUsb {
      */
     private async getDevicesFromTerminal(): Promise<ISpciUsbDevice[]> {
         return new Promise((resolve, reject) => {
-            const result: ISpciUsbDevice[] = [];
-            const responce = shelljs.exec(this.CMD, {
-                async: true,
-                silent: true,
-                maxBuffer: MAX_BUFFER,
-            });
+            try {
+                const result: ISpciUsbDevice[][] = [];
+                const responce = shelljs.exec(this.CMD, {
+                    async: true,
+                    silent: true,
+                    maxBuffer: MAX_BUFFER,
+                });
 
-            responce.stdout.on('data', data => {
-                const parts: string[] = data.toString().split(' +-o ');
+                responce.stdout.on('data', data => {
+                    const rawUsbObj = this.parseOutput(data);
+                    const SPUSB: Record<string, unknown>[] | undefined = rawUsbObj?.SPUSBDataType as Record<
+                        string,
+                        unknown
+                    >[];
 
-                for (let i = 1; i < parts.length; i++) {
-                    const rawUsbObj = this.parseOutput(parts[i]);
-                    const usb = this.fillUsbFields(rawUsbObj);
-
-                    if (usb !== null) {
-                        result.push(usb);
+                    if (!Array.isArray(SPUSB)) {
+                        reject(new Error('Can`t find SPUSBDataType class'));
                     }
-                }
-            });
 
-            responce.on('exit', () => {
-                resolve(result);
-            });
+                    SPUSB.forEach(item => {
+                        if (typeof item?._items !== 'undefined') {
+                            const usb = this.fillUsbFields(item._items as Record<string, unknown>[]);
 
-            responce.on('error', err => {
-                reject(err);
-            });
+                            if (usb !== null) {
+                                result.push(usb);
+                            }
+                        }
+                    });
+                });
+
+                responce.on('exit', () => {
+                    resolve(result.flat());
+                });
+
+                responce.on('error', err => {
+                    reject(err);
+                });
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
