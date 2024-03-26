@@ -1,6 +1,6 @@
 {
     "name": "spci-libs",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "The project consists of a set of libraries for obtaining system information.",
     "author": "Tagir Khadzhiev <aspedm@gmail.com>",
     "homepage": "https://github.com/Aspedm/spci-libs",
@@ -31,7 +31,7 @@
         "@rollup/plugin-json": "6.1.0",
         "@rollup/plugin-node-resolve": "15.2.3",
         "@rollup/plugin-terser": "0.4.4",
-        "@rollup/plugin-typescript": "11.1.6",
+        "rollup-plugin-typescript2": "0.36.0",
         "@types/lodash": "4.14.202",
         "@types/node": "20.10.8",
         "@types/shelljs": "0.8.15",

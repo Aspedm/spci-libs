@@ -4,6 +4,7 @@ import json from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import { dts } from 'rollup-plugin-dts';
+import typescript from 'rollup-plugin-typescript2';
 
 import pkg from './package.json' assert { type: 'json' };
 
@@ -13,6 +14,7 @@ const plugins = [
     json(),
     nodeResolve({ extensions }),
     commonjs(),
+    typescript(),
     babel({
         extensions,
         babelHelpers: 'bundled',
