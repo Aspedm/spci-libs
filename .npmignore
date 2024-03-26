@@ -1,0 +1,16 @@
+/.*
+/tsconfig.json
+/tslint.json
+/.npmrc
+/*.lock
+/git-hooks
+/src
+/coverage
+/node_modules
+/static
+/docs
+/playground
+/jsdoc.json
+/rollup.config.js
+/jest.setup.js
+/jest.config.js
