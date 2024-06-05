@@ -53,6 +53,11 @@ if (!buildExist) {
                     value: 'ram',
                     description: 'This class returned info of RAM',
                 },
+                {
+                    name: 'Wallpaper',
+                    value: 'wallpaper',
+                    description: 'This class returned current wallpaper',
+                },
             ],
         });
 
@@ -122,6 +127,33 @@ if (!buildExist) {
                 console.log('');
                 console.log('RAM layout:');
                 console.log(layout);
+                console.log('');
+            }
+        }
+
+        /**
+         * Select Wallpaper method
+         */
+        if (selectedModule === 'wallpaper') {
+            const selectedMethod = await select({
+                message: 'Select Wallpaper module',
+                choices: [
+                    {
+                        name: 'getImage()',
+                        value: 'getImage',
+                        description: 'This method return current wallpaper.',
+                    },
+                ],
+            });
+
+            // getImage()
+            if (selectedMethod === 'getImage') {
+                const wallpaper = new SYSTEM.Wallpaper();
+                const path = await wallpaper.getImage();
+
+                console.log('');
+                console.log('Current wallpaper:');
+                console.log(path);
                 console.log('');
             }
         }

@@ -56,6 +56,11 @@ const myUsbDevices = async() => {
 - [ ] Support Mac OS
 - [ ] Support Windows
 
+#### Wallpaper
+- [ ] Support linux
+- [ ] Support Mac OS
+- [X] Support Windows
+
 #### Playground
 - [X] Improve playground
 
