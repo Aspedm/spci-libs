@@ -1,6 +1,6 @@
 {
     "name": "spci-libs",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "description": "The project consists of a set of libraries for obtaining system information.",
     "author": "Tagir Khadzhiev <aspedm@gmail.com>",
     "homepage": "https://github.com/Aspedm/spci-libs",
