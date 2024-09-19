@@ -54,6 +54,11 @@ if (!buildExist) {
                     description: 'This class returned info of RAM',
                 },
                 {
+                    name: 'PCI',
+                    value: 'pci',
+                    description: 'This class returned array of detected PCI devices',
+                },
+                {
                     name: 'Wallpaper',
                     value: 'wallpaper',
                     description: 'This class returned current wallpaper',
@@ -127,6 +132,33 @@ if (!buildExist) {
                 console.log('');
                 console.log('RAM layout:');
                 console.log(layout);
+                console.log('');
+            }
+        }
+
+        /**
+         * Select PCI method
+         */
+        if (selectedModule === 'pci') {
+            const selectedMethod = await select({
+                message: 'Select PCI module',
+                choices: [
+                    {
+                        name: 'getInfo()',
+                        value: 'getInfo',
+                        description: 'This method returns an array of PCI devices.',
+                    },
+                ],
+            });
+
+            // getInfo()
+            if (selectedMethod === 'getInfo') {
+                const pci = new SYSTEM.Pci();
+                const devices = await pci.getDevices();
+
+                console.log('');
+                console.log('PCI devices:');
+                console.log(devices);
                 console.log('');
             }
         }

@@ -18,6 +18,12 @@ The project consists of a set of libraries for obtaining system information. Eac
 #### RAM
 - The documentation for RAM can be found [here](https://github.com/Aspedm/spci-libs/blob/main/src/system/ram/README.md)
 
+#### PCI
+- The documentation for PCI devices can be found [here](https://github.com/Aspedm/spci-libs/blob/main/src/system/pci/README.md)
+
+#### Wallpapers
+- The documentation for RAM can be found [here](https://github.com/Aspedm/spci-libs/blob/main/src/system/wallpaper/README.md)
+
 ### Install
 ```sh
 yarn install spci-libs
@@ -39,30 +45,6 @@ const myUsbDevices = async() => {
 1. Install dependencies ```yarn```
 2. Build lib ```yarn build```
 3. Run playground ```yarn start```
-
-### TODO
-#### USB
-- [ ] Support Linux
-- [X] Support Mac OS
-- [X] Support Windows
-
-#### RAM
-- [ ] Support linux
-- [ ] Support Mac OS
-- [X] Support Windows
-
-#### Audio
-- [ ] Support linux
-- [ ] Support Mac OS
-- [ ] Support Windows
-
-#### Wallpaper
-- [ ] Support linux
-- [ ] Support Mac OS
-- [X] Support Windows
-
-#### Playground
-- [X] Improve playground
 
 ### License
 Further details see [LICENSE](LICENSE) file.
