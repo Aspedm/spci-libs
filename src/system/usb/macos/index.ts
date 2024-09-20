@@ -1,5 +1,6 @@
+import { exec } from 'child_process';
+
 import get from 'lodash/get';
-import shelljs from 'shelljs';
 
 import { DEFAULT_FIELDS_VALUES, MAX_BUFFER } from '../config';
 import { ISpciUsb, ISpciUsbDevice } from '../interface';
@@ -31,7 +32,7 @@ class Macos implements ISpciUsb {
             const result: Record<string, unknown> = JSON.parse(output);
             return result;
         } catch (error) {
-            console.error('Error while parse Mac OS output', error);
+            console.error('Error while parse Mac OS output:', error);
             return null;
         }
     }
@@ -80,36 +81,43 @@ class Macos implements ISpciUsb {
         return new Promise((resolve, reject) => {
             try {
                 const result: ISpciUsbDevice[][] = [];
-                const responce = shelljs.exec(this.CMD, {
-                    async: true,
-                    silent: true,
-                    maxBuffer: MAX_BUFFER,
-                });
 
-                responce.stdout.on('data', data => {
-                    const rawUsbObj = this.parseOutput(data);
-                    const SPUSB: Record<string, unknown>[] | undefined = rawUsbObj?.SPUSBDataType as Record<
-                        string,
-                        unknown
-                    >[];
-
-                    if (!Array.isArray(SPUSB)) {
-                        reject(new Error('Can`t find SPUSBDataType class'));
+                const responce = exec(this.CMD, { maxBuffer: MAX_BUFFER }, (error, stdout, stderr) => {
+                    if (error) {
+                        return reject(error);
                     }
 
-                    SPUSB.forEach(item => {
-                        if (typeof item?._items !== 'undefined') {
-                            const usb = this.fillUsbFields(item._items as Record<string, unknown>[]);
+                    if (stderr) {
+                        console.error(stderr);
+                        return reject(new Error(stderr));
+                    }
 
-                            if (usb !== null) {
-                                result.push(usb);
-                            }
+                    try {
+                        const rawUsbObj = this.parseOutput(stdout);
+                        const SPUSB: Record<string, unknown>[] | undefined = rawUsbObj?.SPUSBDataType as Record<
+                            string,
+                            unknown
+                        >[];
+
+                        if (!Array.isArray(SPUSB)) {
+                            return reject(new Error('Can`t find SPUSBDataType class'));
                         }
-                    });
-                });
 
-                responce.on('exit', () => {
-                    resolve(result.flat());
+                        SPUSB.forEach(item => {
+                            if (typeof item?._items !== 'undefined') {
+                                const usb = this.fillUsbFields(item._items as Record<string, unknown>[]);
+
+                                if (usb !== null) {
+                                    result.push(usb);
+                                }
+                            }
+                        });
+
+                        return resolve(result.flat());
+                    } catch (parseError) {
+                        reject(new Error(`Error while parse Mac OS output: ${parseError.message}`));
+                        return [];
+                    }
                 });
 
                 responce.on('error', err => {
