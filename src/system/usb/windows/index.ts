@@ -1,5 +1,8 @@
+import { exec } from 'child_process';
+
 import get from 'lodash/get';
-import shelljs from 'shelljs';
+
+import { POWERSHELL_ARGS_EXEC } from '@src/helpers/terminalParams/windows';
 
 import { DEFAULT_FIELDS_VALUES } from '../config';
 import { ISpciUsb, ISpciUsbDevice } from '../interface';
@@ -81,30 +84,47 @@ class Windows implements ISpciUsb {
     private async getDevicesFromTerminal(): Promise<ISpciUsbDevice[]> {
         return new Promise((resolve, reject) => {
             const result: ISpciUsbDevice[] = [];
-            const responce = shelljs.exec(`powershell.exe -Command "${this.CMD}"`, {
-                async: false,
-                silent: true,
-            });
 
-            if (responce.code !== 0) {
-                console.error('Error while get data from terminal. Code:', responce.code);
-                reject(responce.stderr);
+            try {
+                const responce = exec(
+                    `powershell.exe -Command "${this.CMD}"`,
+                    { ...POWERSHELL_ARGS_EXEC },
+                    (error, stdout, stderr) => {
+                        if (error) {
+                            console.error('Error while getting data from terminal:', error.message);
+                            return reject(error);
+                        }
+
+                        if (stderr) {
+                            console.error('PowerShell error output:', stderr);
+                            return reject(new Error(stderr));
+                        }
+
+                        // Парсим результат вывода
+                        const devices = this.parseOutput(stdout);
+                        if (devices === null) {
+                            return reject(new Error('Error while parsing Windows output'));
+                        }
+
+                        // Обрабатываем каждое устройство
+                        devices.forEach((device, index) => {
+                            const usb = this.fillUsbFields(device, index + 1);
+
+                            if (usb !== null) {
+                                result.push(usb);
+                            }
+                        });
+
+                        return resolve(result);
+                    },
+                );
+
+                responce.on('error', err => {
+                    reject(err);
+                });
+            } catch (error) {
+                reject(error);
             }
-
-            const devices = this.parseOutput(responce.stdout);
-            if (devices === null) {
-                reject(new Error('Error while parse windows output'));
-            }
-
-            devices.forEach((device, index) => {
-                const usb = this.fillUsbFields(device, index + 1);
-
-                if (usb !== null) {
-                    result.push(usb);
-                }
-            });
-
-            resolve(result);
         });
     }
 

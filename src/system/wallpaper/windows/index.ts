@@ -1,6 +1,7 @@
+import { spawnSync } from 'child_process';
 import { promises as fs } from 'fs';
 
-import shelljs from 'shelljs';
+import { POWERSHELL_ARGS_SPAWN } from '@src/helpers/terminalParams/windows';
 
 import { ISpciWallpaper } from '../interface';
 
@@ -13,18 +14,23 @@ class Windows implements ISpciWallpaper {
      */
     private async getDataFromTerminal(): Promise<string> {
         return new Promise((resolve, reject) => {
-            const responce = shelljs.exec(`powershell.exe -Command "${this.CMD}"`, {
-                async: false,
-                silent: true,
-                encoding: 'utf8',
-            });
+            try {
+                const responce = spawnSync('powershell.exe', ['-Command', this.CMD], { ...POWERSHELL_ARGS_SPAWN });
 
-            if (responce.code !== 0) {
-                console.error('Error while get data from terminal. Code:', responce.code);
-                reject(responce.stderr);
+                if (responce.error) {
+                    console.error('Error while getting data from terminal:', responce.error.message);
+                    reject(responce.error);
+                }
+
+                if (responce.status !== 0) {
+                    console.error('Error while get data from terminal. Code:', responce.status);
+                    reject(responce.stderr);
+                }
+
+                resolve(responce.stdout.trim());
+            } catch (error) {
+                reject(error);
             }
-
-            resolve(responce.stdout.trim());
         });
     }
 

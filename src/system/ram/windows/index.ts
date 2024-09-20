@@ -1,7 +1,9 @@
+import { exec } from 'child_process';
 import os from 'os';
 
 import get from 'lodash/get';
-import shelljs from 'shelljs';
+
+import { POWERSHELL_ARGS_EXEC } from '@src/helpers/terminalParams/windows';
 
 import { DEFAULT_RAM_LAYOUT_FIELDS, DEFAULT_RAM_INFO_FIELDS } from '../config';
 import { ISpciRam, ISpciRamFields, ISpciRamLayoutFields } from '../interfaces';
@@ -121,30 +123,45 @@ class Windows implements ISpciRam {
     private async getRamLayoutFromTerminal(): Promise<ISpciRamLayoutFields[]> {
         return new Promise((resolve, reject) => {
             const result: ISpciRamLayoutFields[] = [];
-            const responce = shelljs.exec(`powershell.exe -Command "${this.CMD_RAM_LAYOUT}"`, {
-                async: false,
-                silent: true,
-            });
 
-            if (responce.code !== 0) {
-                console.error('Error while get data from terminal. Code:', responce.code);
-                reject(responce.stderr);
+            try {
+                const responce = exec(
+                    `powershell.exe -Command "${this.CMD_RAM_LAYOUT}"`,
+                    { ...POWERSHELL_ARGS_EXEC },
+                    (error, stdout, stderr) => {
+                        if (error) {
+                            console.error('Error while getting data from terminal:', error.message);
+                            return reject(error);
+                        }
+
+                        if (stderr) {
+                            console.error('PowerShell error output:', stderr);
+                            return reject(new Error(stderr));
+                        }
+
+                        const ramLayouts = this.parseOutput<Record<string, string>[]>(stdout);
+                        if (ramLayouts === null) {
+                            reject(new Error('Error while parse windows output'));
+                        }
+
+                        ramLayouts.forEach(ram => {
+                            const ramStrip = this.fillRamLayoutFields(ram);
+
+                            if (ramStrip !== null) {
+                                result.push(ramStrip);
+                            }
+                        });
+
+                        return resolve(result);
+                    },
+                );
+
+                responce.on('error', err => {
+                    reject(err);
+                });
+            } catch (error) {
+                reject(error);
             }
-
-            const ramLayouts = this.parseOutput<Record<string, string>[]>(responce.stdout);
-            if (ramLayouts === null) {
-                reject(new Error('Error while parse windows output'));
-            }
-
-            ramLayouts.forEach(ram => {
-                const ramStrip = this.fillRamLayoutFields(ram);
-
-                if (ramStrip !== null) {
-                    result.push(ramStrip);
-                }
-            });
-
-            resolve(result);
         });
     }
 
@@ -153,24 +170,38 @@ class Windows implements ISpciRam {
      */
     private async getRamInfoFromTerminal(): Promise<ISpciRamFields | null> {
         return new Promise((resolve, reject) => {
-            const responce = shelljs.exec(`powershell.exe -Command "${this.CMD_RAM_INFO}"`, {
-                async: false,
-                silent: true,
-            });
+            try {
+                const responce = exec(
+                    `powershell.exe -Command "${this.CMD_RAM_INFO}"`,
+                    { ...POWERSHELL_ARGS_EXEC },
+                    (error, stdout, stderr) => {
+                        if (error) {
+                            console.error('Error while getting data from terminal:', error.message);
+                            return reject(error);
+                        }
 
-            if (responce.code !== 0) {
-                console.error('Error while get data from terminal. Code:', responce.code);
-                reject(responce.stderr);
+                        if (stderr) {
+                            console.error('PowerShell error output:', stderr);
+                            return reject(new Error(stderr));
+                        }
+
+                        const ramInfo = this.parseOutput<Record<string, number>>(stdout);
+                        if (ramInfo === null) {
+                            reject(new Error('Error while parse windows output'));
+                        }
+
+                        const result: ISpciRamFields = this.fillRamInfoFields(ramInfo);
+
+                        return resolve(result);
+                    },
+                );
+
+                responce.on('error', err => {
+                    reject(err);
+                });
+            } catch (error) {
+                reject(error);
             }
-
-            const ramInfo = this.parseOutput<Record<string, number>>(responce.stdout);
-            if (ramInfo === null) {
-                reject(new Error('Error while parse windows output'));
-            }
-
-            const result: ISpciRamFields = this.fillRamInfoFields(ramInfo);
-
-            resolve(result);
         });
     }
 
