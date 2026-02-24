@@ -13,6 +13,8 @@ export interface ISpciRamFields {
     swapfree: number | null;
     writeback: number | null;
     dirty: number | null;
+    wired: number | null;
+    compressed: number | null;
 }
 
 export interface ISpciRamLayoutFields {

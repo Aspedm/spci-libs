@@ -1,6 +1,7 @@
 import { plafromDetector } from '../../helpers/platformDetector';
 
 import { ISpciRam, ISpciRamFields, ISpciRamLayoutFields } from './interfaces';
+import Macos from './macos';
 import Windows from './windows';
 
 class Ram implements ISpciRam {
@@ -9,7 +10,7 @@ class Ram implements ISpciRam {
     constructor() {
         this.PLATFORM = plafromDetector<ISpciRam | null>({
             linux: null,
-            macos: null,
+            macos: new Macos(),
             windows: new Windows(),
         });
     }

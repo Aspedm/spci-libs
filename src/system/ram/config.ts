@@ -31,4 +31,6 @@ export const DEFAULT_RAM_INFO_FIELDS: ISpciRamFields = {
     swapfree: null,
     writeback: null,
     dirty: null,
+    wired: null,
+    compressed: null,
 };

@@ -6,7 +6,7 @@ import terser from '@rollup/plugin-terser';
 import { dts } from 'rollup-plugin-dts';
 import typescript from 'rollup-plugin-typescript2';
 
-import pkg from './package.json' assert { type: 'json' };
+import pkg from './package.json' with { type: 'json' };
 
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 
