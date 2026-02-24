@@ -1,7 +1,7 @@
 export interface ISpciWallpaper {
     /**
-     * Get current wallaper.
-     * @returns {Promise<string>}
+     * Get current wallpaper.
+     * @returns {Promise<string | null>}
      */
-    getImage: () => Promise<string>;
+    getImage: () => Promise<string | null>;
 }

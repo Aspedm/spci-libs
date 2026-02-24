@@ -1,6 +1,7 @@
 import { plafromDetector } from '../../helpers/platformDetector';
 
 import { ISpciWallpaper } from './interface';
+import Macos from './macos';
 import Windows from './windows';
 
 /**
@@ -12,7 +13,7 @@ class Wallpaper {
     constructor() {
         this.PLATFORM = plafromDetector<ISpciWallpaper | null>({
             linux: null,
-            macos: null,
+            macos: new Macos(),
             windows: new Windows(),
         });
     }

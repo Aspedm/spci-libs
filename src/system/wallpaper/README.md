@@ -3,7 +3,7 @@ This class returned current wallpaper image
 
 ### Supported platforms
 - Linux ❌
-- Mac OS ❌
+- Mac OS ✅
 - Windows ✅
 
 ### How to use
