@@ -21,6 +21,9 @@ class Macos implements ISpciRam {
 
     private layoutCache: { data: ISpciRamLayoutFields[]; timestamp: number } | null = null;
 
+    // In-flight layout promise to avoid duplicate system_profiler calls
+    private layoutInFlight: Promise<ISpciRamLayoutFields[]> | null = null;
+
     // Alias map for vm_stat page keys that may differ across macOS versions / locales.
     // Each entry lists known variants; first found in the output wins.
     private static readonly VM_STAT_ALIASES: Record<string, string[]> = {
@@ -44,12 +47,10 @@ class Macos implements ISpciRam {
         return new Promise((resolve, reject) => {
             const options = timeout > 0 ? { maxBuffer: this.MAX_BUFFER, timeout } : { maxBuffer: this.MAX_BUFFER };
 
-            const child = execFile(cmd, args, options, (error, stdout) => {
+            execFile(cmd, args, options, (error, stdout) => {
                 if (error) return reject(error);
                 return resolve(stdout);
             });
-
-            child.on('error', reject);
         });
     }
 
@@ -94,9 +95,24 @@ class Macos implements ISpciRam {
     }
 
     /**
+     * Convert a numeric value with an optional unit suffix to bytes.
+     * Handles: K/KB, M/MB, G/GB, T/TB (case-insensitive). No suffix → raw bytes.
+     * @param {number} value
+     * @param {string} unit
+     * @returns {number}
+     */
+    private toBytes(value: number, unit: string): number {
+        const u = unit.replace(/b$/i, '').toUpperCase();
+        if (u === 'K') return Math.round(value * 1024);
+        if (u === 'M') return Math.round(value * 1024 ** 2);
+        if (u === 'G') return Math.round(value * 1024 ** 3);
+        if (u === 'T') return Math.round(value * 1024 ** 4);
+        return Math.round(value);
+    }
+
+    /**
      * Parse "sysctl vm.swapusage" output into bytes.
      * Example: "vm.swapusage: total = 2.00G  used = 512.00M  free = 1.50G  (encrypted)"
-     * Handles suffixes: K, M, G, T (and optional trailing B), or no suffix (raw bytes).
      * @param {string} output
      * @returns {{ total: number; used: number; free: number } | null}
      */
@@ -104,23 +120,14 @@ class Macos implements ISpciRam {
         if (!output) return null;
 
         try {
-            const toBytes = (num: number, unit: string): number => {
-                const u = unit.replace(/b$/i, '').toUpperCase();
-                if (u === 'K') return Math.round(num * 1024);
-                if (u === 'M') return Math.round(num * 1024 ** 2);
-                if (u === 'G') return Math.round(num * 1024 ** 3);
-                if (u === 'T') return Math.round(num * 1024 ** 4);
-                return Math.round(num); // no suffix → raw bytes
-            };
-
-            const totalMatch = output.match(/total\s*=\s*([\d.]+)\s*([KMGT]?B?)/i);
-            const usedMatch = output.match(/used\s*=\s*([\d.]+)\s*([KMGT]?B?)/i);
-            const freeMatch = output.match(/free\s*=\s*([\d.]+)\s*([KMGT]?B?)/i);
+            const totalMatch = output.match(/total\s*=\s*([\d.]+)\s*([KMGT]B?)?/i);
+            const usedMatch = output.match(/used\s*=\s*([\d.]+)\s*([KMGT]B?)?/i);
+            const freeMatch = output.match(/free\s*=\s*([\d.]+)\s*([KMGT]B?)?/i);
 
             return {
-                total: totalMatch ? toBytes(parseFloat(totalMatch[1]), totalMatch[2]) : 0,
-                used: usedMatch ? toBytes(parseFloat(usedMatch[1]), usedMatch[2]) : 0,
-                free: freeMatch ? toBytes(parseFloat(freeMatch[1]), freeMatch[2]) : 0,
+                total: totalMatch ? this.toBytes(parseFloat(totalMatch[1]), totalMatch[2] ?? '') : 0,
+                used: usedMatch ? this.toBytes(parseFloat(usedMatch[1]), usedMatch[2] ?? '') : 0,
+                free: freeMatch ? this.toBytes(parseFloat(freeMatch[1]), freeMatch[2] ?? '') : 0,
             };
         } catch {
             return null;
@@ -133,18 +140,9 @@ class Macos implements ISpciRam {
      * @returns {number | null}
      */
     private parseSizeToBytes(sizeStr: string): number | null {
-        const match = sizeStr.match(/([\d.]+)\s*(KB|MB|GB|TB)/i);
-        if (!match) return null;
-
-        const value = parseFloat(match[1]);
-        const unit = match[2].toUpperCase();
-
-        if (unit === 'KB') return Math.round(value * 1024);
-        if (unit === 'MB') return Math.round(value * 1024 ** 2);
-        if (unit === 'GB') return Math.round(value * 1024 ** 3);
-        if (unit === 'TB') return Math.round(value * 1024 ** 4);
-
-        return null;
+        const match = sizeStr.match(/([\d.]+)\s*([KMGT]B?)?/i);
+        if (!match || !match[2]) return null;
+        return this.toBytes(parseFloat(match[1]), match[2]);
     }
 
     /**
@@ -169,8 +167,9 @@ class Macos implements ISpciRam {
 
     /**
      * Parse system_profiler SPMemoryDataType JSON output.
-     * On Apple Silicon (arm64): single entry with unified memory info.
-     * On Intel: one entry per physical DIMM slot.
+     * Apple Silicon: top-level entries have no `_items` array — unified memory info.
+     * Intel: top-level entries contain `_items` array with per-DIMM objects.
+     * Detection is based on JSON structure, not process.arch, to handle Rosetta correctly.
      * @param {string} output
      * @returns {ISpciRamLayoutFields[]}
      */
@@ -183,46 +182,46 @@ class Macos implements ISpciRam {
 
             if (!Array.isArray(items) || items.length === 0) return [];
 
-            // Apple Silicon: unified memory — single entry, size stored in `SPMemoryDataType` field
-            if (process.arch === 'arm64') {
-                const entry = items[0];
-                const sizeStr = (entry.SPMemoryDataType as string) ?? null;
+            // Intel format: entries contain `_items` array with per-DIMM data
+            const hasIntelDimms = items.some(item => Array.isArray(item._items));
 
-                return [
-                    {
-                        ...DEFAULT_RAM_LAYOUT_FIELDS,
-                        size: sizeStr ? this.parseSizeToBytes(sizeStr) : null,
-                        type: (entry.dimm_type as string) ?? null,
-                        manufacturer: (entry.dimm_manufacturer as string) ?? null,
-                    },
-                ];
+            if (hasIntelDimms) {
+                const dimms = items.flatMap(item => (item._items as Record<string, unknown>[]) ?? []);
+
+                return dimms
+                    .filter(dimm => (dimm.dimm_status as string) !== 'empty')
+                    .map(dimm => {
+                        const name = (dimm._name as string) ?? '';
+                        const sizeStr = (dimm.dimm_size as string) ?? null;
+                        const speedStr = (dimm.dimm_speed as string) ?? null;
+
+                        return {
+                            ...DEFAULT_RAM_LAYOUT_FIELDS,
+                            size: sizeStr ? this.parseSizeToBytes(sizeStr) : null,
+                            bank: name || null,
+                            slot: this.parseSlotFromName(name),
+                            type: (dimm.dimm_type as string) ?? null,
+                            clockSpeed: speedStr ? this.parseSpeedToMhz(speedStr) : null,
+                            formFactor: (dimm.dimm_form_factor as string) ?? null,
+                            manufacturer: (dimm.dimm_manufacturer as string) ?? null,
+                            partNum: (dimm.dimm_part_number as string) ?? null,
+                            serialNum: (dimm.dimm_serial_number as string) ?? null,
+                        };
+                    });
             }
 
-            // Intel: per-DIMM entries
-            const result: ISpciRamLayoutFields[] = [];
+            // Apple Silicon: unified memory — size stored in nested `SPMemoryDataType` field
+            const entry = items[0];
+            const sizeStr = (entry.SPMemoryDataType as string) ?? null;
 
-            items
-                .filter(item => (item.dimm_status as string) !== 'empty')
-                .forEach(item => {
-                    const name = (item._name as string) ?? '';
-                    const sizeStr = (item.dimm_size as string) ?? null;
-                    const speedStr = (item.dimm_speed as string) ?? null;
-
-                    result.push({
-                        ...DEFAULT_RAM_LAYOUT_FIELDS,
-                        size: sizeStr ? this.parseSizeToBytes(sizeStr) : null,
-                        bank: name || null,
-                        slot: this.parseSlotFromName(name),
-                        type: (item.dimm_type as string) ?? null,
-                        clockSpeed: speedStr ? this.parseSpeedToMhz(speedStr) : null,
-                        formFactor: (item.dimm_form_factor as string) ?? null,
-                        manufacturer: (item.dimm_manufacturer as string) ?? null,
-                        partNum: (item.dimm_part_number as string) ?? null,
-                        serialNum: (item.dimm_serial_number as string) ?? null,
-                    });
-                });
-
-            return result;
+            return [
+                {
+                    ...DEFAULT_RAM_LAYOUT_FIELDS,
+                    size: sizeStr ? this.parseSizeToBytes(sizeStr) : null,
+                    type: (entry.dimm_type as string) ?? null,
+                    manufacturer: (entry.dimm_manufacturer as string) ?? null,
+                },
+            ];
         } catch (error) {
             console.error('Error while parsing macOS RAM layout:', error);
             return [];
@@ -290,15 +289,26 @@ class Macos implements ISpciRam {
             return this.layoutCache.data;
         }
 
-        try {
-            const output = await this.runCommand(...this.CMD_LAYOUT, this.LAYOUT_TIMEOUT);
-            const data = this.parseLayoutOutput(output);
-            this.layoutCache = { data, timestamp: now };
-            return data;
-        } catch (error) {
-            console.error('Error while getting macOS RAM layout:', error);
-            return [];
+        // Reuse in-flight request to avoid duplicate system_profiler calls
+        if (this.layoutInFlight) {
+            return this.layoutInFlight;
         }
+
+        this.layoutInFlight = (async () => {
+            try {
+                const output = await this.runCommand(...this.CMD_LAYOUT, this.LAYOUT_TIMEOUT);
+                const data = this.parseLayoutOutput(output);
+                this.layoutCache = { data, timestamp: Date.now() };
+                return data;
+            } catch (error) {
+                console.error('Error while getting macOS RAM layout:', error);
+                return [];
+            } finally {
+                this.layoutInFlight = null;
+            }
+        })();
+
+        return this.layoutInFlight;
     }
 }
 
