@@ -20,6 +20,11 @@ class Macos implements ISpciWallpaper {
         'Library/Application Support/com.apple.wallpaper/aerials/thumbnails',
     );
 
+    private readonly AERIALS_VIDEOS_DIR: string = path.join(
+        os.homedir(),
+        'Library/Application Support/com.apple.wallpaper/aerials/videos',
+    );
+
     private static readonly MAX_BUFFER: number = 1024 * 1024;
 
     private static readonly TIMEOUT: number = 5000;
@@ -102,6 +107,44 @@ class Macos implements ISpciWallpaper {
     }
 
     /**
+     * Fallback for Aerial shuffle mode (Provider = "default"): Configuration is empty,
+     * so there is no assetID. Pick the most recently modified video from the cached
+     * aerials/videos/ directory and return its thumbnail.
+     * @returns {Promise<string | null>}
+     */
+    private async getAerialThumbnailFromVideos(): Promise<string | null> {
+        try {
+            const entries = await fs.readdir(this.AERIALS_VIDEOS_DIR, { withFileTypes: true });
+            const movFiles = entries.filter(e => e.isFile() && e.name.endsWith('.mov'));
+
+            if (movFiles.length === 0) return null;
+
+            // Find the most recently modified video (likely the one currently playing)
+            const stats = await Promise.all(
+                movFiles.map(async f => {
+                    const stat = await fs.stat(path.join(this.AERIALS_VIDEOS_DIR, f.name));
+                    return { name: f.name, mtimeMs: stat.mtimeMs };
+                }),
+            );
+
+            const newest = stats.reduce((a, b) => (b.mtimeMs > a.mtimeMs ? b : a));
+            if (!newest) return null;
+
+            const uuid = newest.name.replace(/\.mov$/i, '');
+            const thumbnailPath = path.join(this.AERIALS_THUMBNAILS_DIR, `${uuid}.png`);
+
+            try {
+                await fs.access(thumbnailPath);
+                return thumbnailPath;
+            } catch {
+                return null;
+            }
+        } catch {
+            return null;
+        }
+    }
+
+    /**
      * macOS 13+ (Darwin 22+): parse wallpaper path from com.apple.wallpaper Store plist.
      * Uses xml1 format — JSON conversion fails on <date> objects present in this plist.
      * Handles regular image wallpapers (file:// URL in Files array) and
@@ -129,7 +172,11 @@ class Macos implements ISpciWallpaper {
             }
 
             // Aerial / dynamic wallpaper: find thumbnail by assetID
-            return this.getAerialThumbnailPath(xml);
+            const aerialPath = await this.getAerialThumbnailPath(xml);
+            if (aerialPath) return aerialPath;
+
+            // Aerial shuffle (Provider = "default"): Configuration is empty, fall back to cached videos
+            return this.getAerialThumbnailFromVideos();
         } catch {
             return null;
         }
